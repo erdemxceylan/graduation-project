@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { Nutrient } from 'src/models/nutrient.model';
 import { HttpManager } from 'src/services/http-manager.service';
 import { Dropdown } from 'primeng/dropdown';
-import { Observable, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -11,29 +10,73 @@ import { Observable, Subject } from 'rxjs';
   providers: [HttpManager],
 })
 export class AppComponent implements OnInit {
-  public nutrientList$: Observable<Nutrient[]> = new Observable<Nutrient[]>();
+  public nutrientList: Nutrient[] = [];
   public selectedNutrient: Nutrient = new Nutrient();
-  public enteredUnitQuantity: number = 0;
   public enteredNutrientList: Nutrient[] = [];
+  public gridSelectedNutrient: Nutrient = new Nutrient();
 
-  constructor(private _httpManager: HttpManager) {}
+  private _originalNutrientList: Nutrient[] = [];
+  constructor(private _httpManager: HttpManager) { }
 
   ngOnInit() {
-    this.nutrientList$ = this._httpManager.getAllNutrients();
+    this._httpManager.getAllNutrients().subscribe((nutrientList: Nutrient[]) => {
+      this.nutrientList = JSON.parse(JSON.stringify(nutrientList));
+      this._originalNutrientList = JSON.parse(JSON.stringify(nutrientList));
+    });
   }
 
   public onAddClicked(nutrientDropdown: Dropdown) {
-    const nutrient: Nutrient = new Nutrient();
-    nutrient.key = this.selectedNutrient.key;
-    nutrient.name = this.selectedNutrient.name;
-    nutrient.unitType = this.selectedNutrient.unitType;
-    nutrient.unitQuantity = this.enteredUnitQuantity;
-    nutrient.protein = nutrient.unitQuantity * this.selectedNutrient.protein;
-    nutrient.calories = nutrient.unitQuantity * this.selectedNutrient.calories;
-    this.enteredNutrientList.push(nutrient);
-    // cleanup
-    this.enteredUnitQuantity = 0;
+    if (this.selectedNutrient && this.enteredNutrientList) {
+      if (this.enteredNutrientList.some((n) => n.key === this.selectedNutrient.key)) {
+        const index = this.enteredNutrientList.findIndex(n => n.key === this.selectedNutrient.key);
+        const activeNutrient = this.enteredNutrientList[index];
+        const updatedNutrient = new Nutrient();
+        updatedNutrient.key = activeNutrient.key;
+        updatedNutrient.name = activeNutrient.name;
+        updatedNutrient.unitType = activeNutrient.unitType;
+        updatedNutrient.unitQuantity = activeNutrient.unitQuantity + this.selectedNutrient.unitQuantity;
+        updatedNutrient.calories = updatedNutrient.unitQuantity * this.selectedNutrient.calories;
+        updatedNutrient.protein = updatedNutrient.unitQuantity * this.selectedNutrient.protein;
+        this.enteredNutrientList[index] = updatedNutrient;
+      } else {
+        const newNutrient: Nutrient = new Nutrient();
+        newNutrient.key = this.selectedNutrient.key;
+        newNutrient.name = this.selectedNutrient.name;
+        newNutrient.unitType = this.selectedNutrient.unitType;
+        newNutrient.unitQuantity = this.selectedNutrient.unitQuantity;
+        newNutrient.protein = newNutrient.unitQuantity * this.selectedNutrient.protein;
+        newNutrient.calories = newNutrient.unitQuantity * this.selectedNutrient.calories;
+        this.enteredNutrientList.push(newNutrient);
+      }
+
+      // cleanup
+      this.nutrientList = JSON.parse(JSON.stringify(this._originalNutrientList));
+      this.selectedNutrient = new Nutrient();
+      if (nutrientDropdown) nutrientDropdown.focus();
+    }
+  }
+
+  public onEditClicked(nutrientDropdown: Dropdown) {
+
+  }
+
+  public onDeleteClicked(nutrientDropdown: Dropdown) {
+
+  }
+
+  public onRowSelect() {
+    const originalNutrient = this.nutrientList.find((n) => n.key === this.gridSelectedNutrient.key) || new Nutrient();
+    const nutrient = new Nutrient();
+    nutrient.key = originalNutrient.key;
+    nutrient.name = originalNutrient.name;
+    nutrient.unitType = originalNutrient.unitType;
+    nutrient.unitQuantity = this.gridSelectedNutrient.unitQuantity;
+    nutrient.calories = originalNutrient.calories;
+    nutrient.protein = originalNutrient.protein;
+    this.selectedNutrient = nutrient;
+  }
+
+  public onRowUnselect() {
     this.selectedNutrient = new Nutrient();
-    if (nutrientDropdown) nutrientDropdown.focus();
   }
 }
