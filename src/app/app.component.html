@@ -4,7 +4,7 @@
     <div class="nutrient-selection">
       <div class="nutrient-selection__item">
         <p-dropdown #nutrientDropdown [options]="nutrientList" [(ngModel)]="selectedNutrient" optionLabel="name"
-          [filter]="true" filterBy="name" placeholder="Bir besin seçiniz..." dataKey="key">
+          [filter]="true" filterBy="name" placeholder="Bir besin seçiniz..." dataKey="key" (ngModelChange)="onSelectedNutrientChanged()">
           <ng-template pTemplate="selectedNutrient">
             <div *ngIf="selectedNutrient">
               <div>{{ selectedNutrient.name }}</div>
@@ -25,11 +25,11 @@
       <div class="nutrient-selection__item">
         <div class="button-container">
           <p-button class="button-container__item" label="Ekle" (onClick)="onAddClicked(nutrientDropdown)"
-            [disabled]="selectedNutrient.key === ''"></p-button>
+            [disabled]="!selectedNutrient || selectedNutrient.key === ''"></p-button>
           <p-button class="button-container__item" label="Güncelle" (onClick)="onEditClicked(nutrientDropdown)"
-            [disabled]="gridSelectedNutrient.key === ''"></p-button>
+            [disabled]="!gridSelectedNutrient || gridSelectedNutrient.key === ''"></p-button>
           <p-button class="button-container__item" label="Sil" (onClick)="onDeleteClicked(nutrientDropdown)"
-            [disabled]="gridSelectedNutrient.key === ''"></p-button>
+            [disabled]="!gridSelectedNutrient || gridSelectedNutrient.key === ''"></p-button>
         </div>
       </div>
     </div>

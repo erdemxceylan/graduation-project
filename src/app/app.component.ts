@@ -25,6 +25,10 @@ export class AppComponent implements OnInit {
     });
   }
 
+  public onSelectedNutrientChanged() {
+    this.gridSelectedNutrient = new Nutrient();
+  }
+
   public onAddClicked(nutrientDropdown: Dropdown) {
     if (this.selectedNutrient && this.enteredNutrientList) {
       if (this.enteredNutrientList.some((n) => n.key === this.selectedNutrient.key)) {
