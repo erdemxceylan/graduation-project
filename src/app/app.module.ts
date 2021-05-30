@@ -11,6 +11,7 @@ import { AppComponent } from './app.component';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
+import { TableModule } from 'primeng/table';
 
 @NgModule({
   declarations: [AppComponent],
@@ -21,9 +22,11 @@ import { ButtonModule } from 'primeng/button';
     FormsModule,
     AppRoutingModule,
 
+    // PrimeNG
     DropdownModule,
     InputNumberModule,
     ButtonModule,
+    TableModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

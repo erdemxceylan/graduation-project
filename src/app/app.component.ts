@@ -1,59 +1,39 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { map } from 'rxjs/operators';
+import { Component, OnInit } from '@angular/core';
 import { Nutrient } from 'src/models/nutrient.model';
-import { PrimeNGConfig } from 'primeng/api';
-import { Subject } from 'rxjs';
 import { HttpManager } from 'src/services/http-manager.service';
+import { Dropdown } from 'primeng/dropdown';
+import { Observable, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
+  providers: [HttpManager],
 })
-export class AppComponent implements OnInit, OnDestroy {
-  public nutrientList: Nutrient[] = [];
+export class AppComponent implements OnInit {
+  public nutrientList$: Observable<Nutrient[]> = new Observable<Nutrient[]>();
   public selectedNutrient: Nutrient = new Nutrient();
-  public unit_quantity: number = 0;
+  public enteredUnitQuantity: number = 0;
+  public enteredNutrientList: Nutrient[] = [];
 
-  private _unsubscribe$: Subject<void> = new Subject<void>();
-
-  constructor(
-    private _httpManager: HttpManager,
-    private _primengConfig: PrimeNGConfig
-  ) {
-    this._primengConfig.ripple = true;
-  }
+  constructor(private _httpManager: HttpManager) {}
 
   ngOnInit() {
-    this._httpManager
-      .get('nutrients')
-      .pipe(
-        map((response: any) => {
-          const nutrientList: Nutrient[] = [];
-          for (const key in response) {
-            const nutrient: Nutrient = new Nutrient();
-            nutrient.key = key;
-            nutrient.name = response[key].name;
-            nutrient.unit_quantity = response[key].unit_quantity;
-            nutrient.unit_type = response[key].unit_type;
-            nutrient.calories = response[key].calories;
-            nutrient.protein = response[key].protein;
-            nutrientList.push(nutrient);
-          }
-          return nutrientList;
-        })
-      )
-      .subscribe(
-        (nutrientList: Nutrient[]) => (this.nutrientList = nutrientList)
-      );
+    this.nutrientList$ = this._httpManager.getAllNutrients();
   }
 
-  public onAddClicked() {
-    console.log();
-  }
-
-  ngOnDestroy() {
-    this._unsubscribe$.next();
-    this._unsubscribe$.complete();
+  public onAddClicked(nutrientDropdown: Dropdown) {
+    const nutrient: Nutrient = new Nutrient();
+    nutrient.key = this.selectedNutrient.key;
+    nutrient.name = this.selectedNutrient.name;
+    nutrient.unitType = this.selectedNutrient.unitType;
+    nutrient.unitQuantity = this.enteredUnitQuantity;
+    nutrient.protein = nutrient.unitQuantity * this.selectedNutrient.protein;
+    nutrient.calories = nutrient.unitQuantity * this.selectedNutrient.calories;
+    this.enteredNutrientList.push(nutrient);
+    // cleanup
+    this.enteredUnitQuantity = 0;
+    this.selectedNutrient = new Nutrient();
+    if (nutrientDropdown) nutrientDropdown.focus();
   }
 }

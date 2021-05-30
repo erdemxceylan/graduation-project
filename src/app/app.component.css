@@ -1,49 +1,51 @@
 .layout {
+  width: 100vw;
+  height: 100vh;
+  padding: 2rem;
+  max-width: 80rem;
+  margin: auto;
+}
+
+.nutrient-selection {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  padding: 2rem;
-  width: 100%;
 }
 
 @media (min-width: 48rem) {
-  .layout {
+  .nutrient-selection {
     flex-direction: row;
-    max-width: 64rem;
-    margin: auto;
   }
 }
 
-.layout-item {
+.nutrient-selection__item {
   width: 100%;
 }
 
-@media (min-width: 48rem) {
-  .layout-item {
-    width: 33%;
-  }
-}
-
-.layout-item + .layout-item {
+.nutrient-selection__item + .nutrient-selection__item {
   padding: 0;
   padding-top: 2rem;
 }
 
 @media (min-width: 48rem) {
-  .layout-item + .layout-item {
+  .nutrient-selection__item + .nutrient-selection__item {
     padding: 0;
     padding-left: 2rem;
   }
 }
 
-:host ::ng-deep .p-dropdown {
+:host ::ng-deep .nutrient-selection__item .p-dropdown {
   width: 100%;
 }
 
-:host ::ng-deep .p-inputnumber {
+:host ::ng-deep .nutrient-selection__item .p-inputnumber {
   width: 100%;
 }
 
-:host ::ng-deep .p-button {
+:host ::ng-deep .nutrient-selection__item .p-button {
   width: 100%;
+}
+
+.selected-nutrients {
+  display: flex;
+  margin-top: 2rem;
 }
