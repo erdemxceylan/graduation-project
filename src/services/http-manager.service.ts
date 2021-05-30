@@ -10,8 +10,8 @@ export class HttpManager {
 
   constructor(private _http: HttpClient) {}
 
-  public get() {
-    this._http.get<any>(this._baseUrl);
+  public get(jsonName: string) {
+    return this._http.get<any>(`${this._baseUrl + jsonName}.json`);
   }
 
   public post() {

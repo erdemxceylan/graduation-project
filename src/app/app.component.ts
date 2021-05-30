@@ -1,20 +1,32 @@
-import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { map } from 'rxjs/operators';
 import { Nutrient } from 'src/models/nutrient.model';
+import { PrimeNGConfig } from 'primeng/api';
+import { Subject } from 'rxjs';
+import { HttpManager } from 'src/services/http-manager.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
   public nutrientList: Nutrient[] = [];
-  constructor(private _http: HttpClient) {
-    this._http
-      .get(
-        'https://graduation-project-7c908-default-rtdb.europe-west1.firebasedatabase.app/nutrients.json'
-      )
+  public selectedNutrient: Nutrient = new Nutrient();
+  public unit_quantity: number = 0;
+
+  private _unsubscribe$: Subject<void> = new Subject<void>();
+
+  constructor(
+    private _httpManager: HttpManager,
+    private _primengConfig: PrimeNGConfig
+  ) {
+    this._primengConfig.ripple = true;
+  }
+
+  ngOnInit() {
+    this._httpManager
+      .get('nutrients')
       .pipe(
         map((response: any) => {
           const nutrientList: Nutrient[] = [];
@@ -31,8 +43,17 @@ export class AppComponent {
           return nutrientList;
         })
       )
-      .subscribe((nutrientList: Nutrient[]) => this.nutrientList = nutrientList);
+      .subscribe(
+        (nutrientList: Nutrient[]) => (this.nutrientList = nutrientList)
+      );
   }
 
+  public onAddClicked() {
+    console.log();
+  }
 
+  ngOnDestroy() {
+    this._unsubscribe$.next();
+    this._unsubscribe$.complete();
+  }
 }
