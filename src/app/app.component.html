@@ -27,9 +27,9 @@
           <p-button class="button-container__item" label="Ekle" (onClick)="onAddClicked(nutrientDropdown)"
             [disabled]="selectedNutrient.key === ''"></p-button>
           <p-button class="button-container__item" label="Güncelle" (onClick)="onEditClicked(nutrientDropdown)"
-            [disabled]="selectedNutrient.key === ''"></p-button>
+            [disabled]="gridSelectedNutrient.key === ''"></p-button>
           <p-button class="button-container__item" label="Sil" (onClick)="onDeleteClicked(nutrientDropdown)"
-            [disabled]="selectedNutrient.key === ''"></p-button>
+            [disabled]="gridSelectedNutrient.key === ''"></p-button>
         </div>
       </div>
     </div>
