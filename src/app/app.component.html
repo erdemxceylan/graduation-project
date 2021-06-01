@@ -1,10 +1,14 @@
 <!-- <router-outlet></router-outlet> -->
 <ng-container *ngIf="nutrientList && nutrientList.length > 0">
-  <div class="layout">
+  <div class="menu">
+    <p-tabMenu [model]="menuItems" [activeItem]="menuItems[0]"></p-tabMenu>
+  </div>
+  <div class="app-layout">
     <div class="nutrient-selection">
       <div class="nutrient-selection__item">
         <p-dropdown #nutrientDropdown [options]="nutrientList" [(ngModel)]="selectedNutrient" optionLabel="name"
-          [filter]="true" filterBy="name" placeholder="Bir besin seçiniz..." dataKey="key" (ngModelChange)="onSelectedNutrientChanged()">
+          [filter]="true" filterBy="name" placeholder="Bir besin seçiniz..." dataKey="key"
+          (ngModelChange)="onSelectedNutrientChanged()">
           <ng-template pTemplate="selectedNutrient">
             <div *ngIf="selectedNutrient">
               <div>{{ selectedNutrient.name }}</div>
@@ -24,11 +28,13 @@
       </div>
       <div class="nutrient-selection__item">
         <div class="button-container">
-          <p-button class="button-container__item" label="Ekle" (onClick)="onAddClicked(nutrientDropdown)"
-            [disabled]="!selectedNutrient || selectedNutrient.key === ''"></p-button>
+          <p-button class="button-container__item" styleClass="p-button-success" label="Ekle"
+            (onClick)="onAddClicked(nutrientDropdown)" [disabled]="!selectedNutrient || selectedNutrient.key === ''">
+          </p-button>
           <p-button class="button-container__item" label="Güncelle" (onClick)="onEditClicked(nutrientDropdown)"
             [disabled]="!gridSelectedNutrient || gridSelectedNutrient.key === ''"></p-button>
-          <p-button class="button-container__item" label="Sil" (onClick)="onDeleteClicked(nutrientDropdown)"
+          <p-button class="button-container__item" styleClass="p-button-danger" label="Sil"
+            (onClick)="onDeleteClicked(nutrientDropdown)"
             [disabled]="!gridSelectedNutrient || gridSelectedNutrient.key === ''"></p-button>
         </div>
       </div>
@@ -51,8 +57,15 @@
               <td>{{ nutrient.name }}</td>
               <td>{{ nutrient.unitQuantity }}</td>
               <td>{{ nutrient.unitType }}</td>
-              <td>{{ nutrient.calories }}</td>
-              <td>{{ nutrient.protein }}</td>
+              <td>{{ nutrient.calories | number }}</td>
+              <td>{{ nutrient.protein | number }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="footer">
+            <tr>
+              <td colspan="3">Alınan / Hedef :</td>
+              <td>{{ totalCalories | number }}{{' / '}}{{ '1,300-2000' }}</td>
+              <td>{{ totalProtein | number }}{{' / '}}{{ '150' }}</td>
             </tr>
           </ng-template>
         </p-table>

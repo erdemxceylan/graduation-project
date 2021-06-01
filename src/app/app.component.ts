@@ -2,6 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { Nutrient } from 'src/models/nutrient.model';
 import { HttpManager } from 'src/services/http-manager.service';
 import { Dropdown } from 'primeng/dropdown';
+import { PrimeNGConfig } from 'primeng/api';
+import { MenuItem } from 'primeng/api';
+import { fromEvent, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -10,18 +14,34 @@ import { Dropdown } from 'primeng/dropdown';
   providers: [HttpManager],
 })
 export class AppComponent implements OnInit {
+  public menuItems: MenuItem[] = [];
   public nutrientList: Nutrient[] = [];
   public selectedNutrient: Nutrient = new Nutrient();
   public enteredNutrientList: Nutrient[] = [];
   public gridSelectedNutrient: Nutrient = new Nutrient();
 
+  public totalProtein: number = 0;
+  public totalCalories: number = 0;
+
   private _originalNutrientList: Nutrient[] = [];
-  constructor(private _httpManager: HttpManager) { }
+  private _unsubscribe$: Subject<void> = new Subject<void>();
+
+  constructor(
+    private _httpManager: HttpManager,
+    private _primengConfig: PrimeNGConfig
+  ) { }
 
   ngOnInit() {
+    this._primengConfig.ripple = true;
+    this._setMenuItems();
+    this._getAllNutrients();
+  }
+
+  private _getAllNutrients() {
     this._httpManager.getAllNutrients().subscribe((nutrientList: Nutrient[]) => {
       this.nutrientList = JSON.parse(JSON.stringify(nutrientList));
       this._originalNutrientList = JSON.parse(JSON.stringify(nutrientList));
+      this._setMenuClickListeners();
     });
   }
 
@@ -53,6 +73,7 @@ export class AppComponent implements OnInit {
         this.enteredNutrientList.push(newNutrient);
       }
       this._clearItems(nutrientDropdown);
+      this._calculateTotals();
     }
   }
 
@@ -69,6 +90,7 @@ export class AppComponent implements OnInit {
       updatedNutrient.protein = updatedNutrient.unitQuantity * this.selectedNutrient.protein;
       this.enteredNutrientList[index] = updatedNutrient;
       this._clearItems(nutrientDropdown);
+      this._calculateTotals();
     }
   }
 
@@ -77,6 +99,7 @@ export class AppComponent implements OnInit {
       this.enteredNutrientList = this.enteredNutrientList.filter(n => n.key !== this.selectedNutrient.key);
     }
     this._clearItems(nutrientDropdown);
+    this._calculateTotals();
   }
 
   public onRowSelect() {
@@ -102,5 +125,49 @@ export class AppComponent implements OnInit {
     this.selectedNutrient = new Nutrient();
     this.gridSelectedNutrient = new Nutrient();
     if (nutrientDropdown) nutrientDropdown.focus();
+  }
+
+  private _calculateTotals() {
+    if (this.enteredNutrientList && this.enteredNutrientList.length > 0) {
+      const tNutrient = this.enteredNutrientList.reduce((pNutrient: Nutrient, cNurtient: Nutrient) => {
+        const nutrient = new Nutrient();
+        nutrient.calories = pNutrient.calories + cNurtient.calories;
+        nutrient.protein = pNutrient.protein + cNurtient.protein;
+        return nutrient;
+      });
+
+      if (tNutrient) {
+        this.totalCalories = tNutrient.calories;
+        this.totalProtein = tNutrient.protein;
+      }
+    }
+  }
+
+  private _setMenuItems() {
+    this.menuItems = [
+      { id: 'menu-home', label: 'Anasayfa', icon: 'pi pi-fw pi-home' },
+      { id: 'menu-settings', label: 'Veri Ayarları', icon: 'pi pi-fw pi-cog' },
+      { id: 'menu-add', label: 'Yeni Besin', icon: 'pi pi-fw pi-plus' },
+      { id: 'menu-edit', label: 'Besin Güncelle', icon: 'pi pi-fw pi-pencil' },
+      { id: 'menu-list', label: 'Besin Listesi', icon: 'pi pi-fw pi-list' }
+    ];
+  }
+
+  private _setMenuClickListeners() {
+    setTimeout(() => {
+      const menuHome = document.getElementById('menu-home');
+      if (menuHome) {
+        fromEvent(menuHome, 'click')
+          .pipe(takeUntil(this._unsubscribe$))
+          .subscribe(() => console.log('Home clicked'));
+      }
+
+      const menuSettings = document.getElementById('menu-settings');
+      if (menuSettings) {
+        fromEvent(menuSettings, 'click')
+          .pipe(takeUntil(this._unsubscribe$))
+          .subscribe(() => console.log('Settings'));
+      }
+    });
   }
 }

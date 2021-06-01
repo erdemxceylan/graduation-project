@@ -12,6 +12,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
+import { TabMenuModule } from 'primeng/tabmenu';
 
 @NgModule({
   declarations: [AppComponent],
@@ -27,8 +28,9 @@ import { TableModule } from 'primeng/table';
     InputNumberModule,
     ButtonModule,
     TableModule,
+    TabMenuModule
   ],
   providers: [],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }

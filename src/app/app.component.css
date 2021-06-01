@@ -1,6 +1,11 @@
-.layout {
-  width: 100vw;
-  height: 100vh;
+.menu {
+  padding-left: 2rem;
+  padding-right: 2rem;
+  max-width: 80rem;
+  margin: auto;
+}
+
+.app-layout {
   padding: 2rem;
   max-width: 80rem;
   margin: auto;
