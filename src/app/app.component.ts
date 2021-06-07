@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Nutrient } from 'src/models/nutrient.model';
 import { HttpManager } from 'src/services/http-manager.service';
 import { Dropdown } from 'primeng/dropdown';
@@ -6,6 +6,7 @@ import { PrimeNGConfig } from 'primeng/api';
 import { MenuItem } from 'primeng/api';
 import { fromEvent, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { PageTypes } from 'src/enums/page-types.enum';
 
 @Component({
   selector: 'app-root',
@@ -13,7 +14,12 @@ import { takeUntil } from 'rxjs/operators';
   styleUrls: ['./app.component.css'],
   providers: [HttpManager],
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
+  public readonly PageTypes: typeof PageTypes = PageTypes;
+
+  public pageType: PageTypes = PageTypes.HomePage;
+  public showDataSettings: boolean = false;
+
   public menuItems: MenuItem[] = [];
   public nutrientList: Nutrient[] = [];
   public selectedNutrient: Nutrient = new Nutrient();
@@ -31,17 +37,17 @@ export class AppComponent implements OnInit {
     private _primengConfig: PrimeNGConfig
   ) { }
 
-  ngOnInit() {
+  public async ngOnInit() {
     this._primengConfig.ripple = true;
     this._setMenuItems();
-    this._getAllNutrients();
+    await this._getAllNutrients();
+    this._setMenuClickListeners();
   }
 
-  private _getAllNutrients() {
-    this._httpManager.getAllNutrients().subscribe((nutrientList: Nutrient[]) => {
+  private async _getAllNutrients() {
+    await this._httpManager.getAllNutrients().toPromise().then((nutrientList: Nutrient[]) => {
       this.nutrientList = JSON.parse(JSON.stringify(nutrientList));
       this._originalNutrientList = JSON.parse(JSON.stringify(nutrientList));
-      this._setMenuClickListeners();
     });
   }
 
@@ -146,10 +152,10 @@ export class AppComponent implements OnInit {
   private _setMenuItems() {
     this.menuItems = [
       { id: 'menu-home', label: 'Anasayfa', icon: 'pi pi-fw pi-home' },
+      // { id: 'menu-add', label: 'Yeni Besin', icon: 'pi pi-fw pi-plus' },
+      // { id: 'menu-edit', label: 'Besin Güncelle', icon: 'pi pi-fw pi-pencil' },
+      { id: 'menu-list', label: 'Besin Listesi', icon: 'pi pi-fw pi-list' },
       { id: 'menu-settings', label: 'Veri Ayarları', icon: 'pi pi-fw pi-cog' },
-      { id: 'menu-add', label: 'Yeni Besin', icon: 'pi pi-fw pi-plus' },
-      { id: 'menu-edit', label: 'Besin Güncelle', icon: 'pi pi-fw pi-pencil' },
-      { id: 'menu-list', label: 'Besin Listesi', icon: 'pi pi-fw pi-list' }
     ];
   }
 
@@ -159,15 +165,36 @@ export class AppComponent implements OnInit {
       if (menuHome) {
         fromEvent(menuHome, 'click')
           .pipe(takeUntil(this._unsubscribe$))
-          .subscribe(() => console.log('Home clicked'));
+          .subscribe(() => this.pageType = PageTypes.HomePage);
+      }
+
+      const menuNurientList = document.getElementById('menu-list');
+      if (menuNurientList) {
+        fromEvent(menuNurientList, 'click')
+          .pipe(takeUntil(this._unsubscribe$))
+          .subscribe(async () =>  {
+            await this._getAllNutrients();
+            this.pageType = PageTypes.NutrientList;
+          });
       }
 
       const menuSettings = document.getElementById('menu-settings');
       if (menuSettings) {
         fromEvent(menuSettings, 'click')
           .pipe(takeUntil(this._unsubscribe$))
-          .subscribe(() => console.log('Settings'));
+          .subscribe(() => this.showDataSettings = true);
       }
     });
   }
+
+  public ngOnDestroy() {
+    this._unsubscribe$.next();
+    this._unsubscribe$.complete();
+  }
 }
+
+/* TODO List */
+/*
+  - Mobile responsive design
+  - Popuplar kapandıktan sonra, popup açılmadan önce hangi tab aktif ise o tab tekrar aktif olmalıdır.
+*/

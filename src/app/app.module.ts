@@ -13,6 +13,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TabMenuModule } from 'primeng/tabmenu';
+import { DialogModule } from 'primeng/dialog';
 
 @NgModule({
   declarations: [AppComponent],
@@ -28,7 +29,8 @@ import { TabMenuModule } from 'primeng/tabmenu';
     InputNumberModule,
     ButtonModule,
     TableModule,
-    TabMenuModule
+    TabMenuModule,
+    DialogModule
   ],
   providers: [],
   bootstrap: [AppComponent],

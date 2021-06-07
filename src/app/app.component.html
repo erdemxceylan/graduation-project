@@ -1,75 +1,121 @@
 <!-- <router-outlet></router-outlet> -->
-<ng-container *ngIf="nutrientList && nutrientList.length > 0">
-  <div class="menu">
-    <p-tabMenu [model]="menuItems" [activeItem]="menuItems[0]"></p-tabMenu>
-  </div>
-  <div class="app-layout">
-    <div class="nutrient-selection">
-      <div class="nutrient-selection__item">
-        <p-dropdown #nutrientDropdown [options]="nutrientList" [(ngModel)]="selectedNutrient" optionLabel="name"
-          [filter]="true" filterBy="name" placeholder="Bir besin seçiniz..." dataKey="key"
-          (ngModelChange)="onSelectedNutrientChanged()">
-          <ng-template pTemplate="selectedNutrient">
-            <div *ngIf="selectedNutrient">
-              <div>{{ selectedNutrient.name }}</div>
-            </div>
-          </ng-template>
-          <ng-template let-nutrient pTemplate="nutrient">
-            <div>
-              <div>{{ nutrient.name }}</div>
-            </div>
-          </ng-template>
-        </p-dropdown>
+<div class="menu">
+  <p-tabMenu [model]="menuItems" [activeItem]="menuItems[0]"></p-tabMenu>
+</div>
+<ng-container *ngIf="pageType === PageTypes.HomePage; else pageTypeNutrientList">
+  <ng-container *ngIf="nutrientList && nutrientList.length > 0">
+    <div class="app-layout">
+      <div class="inputs">
+        <div class="inputs__item">
+          <p-dropdown #nutrientDropdown [options]="nutrientList" [(ngModel)]="selectedNutrient" optionLabel="name"
+            [filter]="true" filterBy="name" placeholder="Bir besin seçiniz..." dataKey="key"
+            (ngModelChange)="onSelectedNutrientChanged()">
+            <ng-template pTemplate="selectedNutrient">
+              <div *ngIf="selectedNutrient">
+                <div>{{ selectedNutrient.name }}</div>
+              </div>
+            </ng-template>
+            <ng-template let-nutrient pTemplate="nutrient">
+              <div>
+                <div>{{ nutrient.name }}</div>
+              </div>
+            </ng-template>
+          </p-dropdown>
+        </div>
+        <div class="inputs__item">
+          <p-inputNumber mode="decimal" [(ngModel)]="selectedNutrient.unitQuantity" [minFractionDigits]="2"
+            [maxFractionDigits]="2" [suffix]="' ' + selectedNutrient.unitType" [disabled]="selectedNutrient.key === ''">
+          </p-inputNumber>
+        </div>
+        <div class="inputs__item">
+          <div class="buttons">
+            <p-button class="buttons__item" styleClass="p-button-success" label="Ekle" icon="pi pi-plus"
+              (onClick)="onAddClicked(nutrientDropdown)" [disabled]="!selectedNutrient || selectedNutrient.key === ''">
+            </p-button>
+            <p-button class="buttons__item" label="Güncelle" icon="pi pi-pencil"
+              (onClick)="onEditClicked(nutrientDropdown)"
+              [disabled]="!gridSelectedNutrient || gridSelectedNutrient.key === ''"></p-button>
+            <p-button class="buttons__item" styleClass="p-button-danger" label="Sil" icon="pi pi-trash"
+              (onClick)="onDeleteClicked(nutrientDropdown)"
+              [disabled]="!gridSelectedNutrient || gridSelectedNutrient.key === ''"></p-button>
+          </div>
+        </div>
       </div>
-      <div class="nutrient-selection__item">
-        <p-inputNumber mode="decimal" [(ngModel)]="selectedNutrient.unitQuantity" [minFractionDigits]="2"
-          [maxFractionDigits]="2" [suffix]="' ' + selectedNutrient.unitType" [disabled]="selectedNutrient.key === ''">
-        </p-inputNumber>
-      </div>
-      <div class="nutrient-selection__item">
-        <div class="button-container">
-          <p-button class="button-container__item" styleClass="p-button-success" label="Ekle"
-            (onClick)="onAddClicked(nutrientDropdown)" [disabled]="!selectedNutrient || selectedNutrient.key === ''">
-          </p-button>
-          <p-button class="button-container__item" label="Güncelle" (onClick)="onEditClicked(nutrientDropdown)"
-            [disabled]="!gridSelectedNutrient || gridSelectedNutrient.key === ''"></p-button>
-          <p-button class="button-container__item" styleClass="p-button-danger" label="Sil"
-            (onClick)="onDeleteClicked(nutrientDropdown)"
-            [disabled]="!gridSelectedNutrient || gridSelectedNutrient.key === ''"></p-button>
+      <div *ngIf="enteredNutrientList && enteredNutrientList.length > 0" class="selected-nutrients">
+        <div class="selected-nutrients__item">
+          <p-table [value]="enteredNutrientList" selectionMode="single" [(selection)]="gridSelectedNutrient"
+            dataKey="key" (onRowSelect)="onRowSelect()" (onRowUnselect)="onRowUnselect()">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Besin</th>
+                <th>Miktar</th>
+                <th>Birim</th>
+                <th>Kalori</th>
+                <th>Protein</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-nutrient>
+              <tr [pSelectableRow]="nutrient">
+                <td>{{ nutrient.name }}</td>
+                <td>{{ nutrient.unitQuantity }}</td>
+                <td>{{ nutrient.unitType }}</td>
+                <td>{{ nutrient.calories | number }}</td>
+                <td>{{ nutrient.protein | number }}</td>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="footer">
+              <tr>
+                <td colspan="3">Alınan / Hedef :</td>
+                <td>{{ totalCalories | number }}{{' / '}}{{ '1,300-2000' }}</td>
+                <td>{{ totalProtein | number }}{{' / '}}{{ '150' }}</td>
+              </tr>
+            </ng-template>
+          </p-table>
         </div>
       </div>
     </div>
-    <div *ngIf="enteredNutrientList && enteredNutrientList.length > 0" class="selected-nutrients">
-      <div class="selected-nutrients__item">
-        <p-table [value]="enteredNutrientList" selectionMode="single" [(selection)]="gridSelectedNutrient" dataKey="key"
-          (onRowSelect)="onRowSelect()" (onRowUnselect)="onRowUnselect()">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Besin</th>
-              <th>Miktar</th>
-              <th>Birim</th>
-              <th>Kalori</th>
-              <th>Protein</th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-nutrient>
-            <tr [pSelectableRow]="nutrient">
-              <td>{{ nutrient.name }}</td>
-              <td>{{ nutrient.unitQuantity }}</td>
-              <td>{{ nutrient.unitType }}</td>
-              <td>{{ nutrient.calories | number }}</td>
-              <td>{{ nutrient.protein | number }}</td>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="footer">
-            <tr>
-              <td colspan="3">Alınan / Hedef :</td>
-              <td>{{ totalCalories | number }}{{' / '}}{{ '1,300-2000' }}</td>
-              <td>{{ totalProtein | number }}{{' / '}}{{ '150' }}</td>
-            </tr>
-          </ng-template>
-        </p-table>
+  </ng-container>
+</ng-container>
+<ng-template #pageTypeNutrientList>
+  <ng-container *ngIf="nutrientList && nutrientList.length > 0">
+    <div class="app-layout">
+      <div class="inputs">
+        <div class="input__item">
+
+        </div>
+        <div class="input__item">
+          
+        </div>
+        <div class="input__item">
+          
+        </div>
+      </div>
+      <div class="nutrient-list">
+        <p-table [value]="nutrientList" selectionMode="single" [(selection)]="gridSelectedNutrient" dataKey="key"
+        (onRowSelect)="onRowSelect()" (onRowUnselect)="onRowUnselect()">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Besin</th>
+            <th>Miktar</th>
+            <th>Birim</th>
+            <th>Kalori</th>
+            <th>Protein</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-nutrient>
+          <tr [pSelectableRow]="nutrient">
+            <td>{{ nutrient.name }}</td>
+            <td>{{ nutrient.unitQuantity }}</td>
+            <td>{{ nutrient.unitType }}</td>
+            <td>{{ nutrient.calories | number }}</td>
+            <td>{{ nutrient.protein | number }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
       </div>
     </div>
-  </div>
-</ng-container>
+  </ng-container>
+</ng-template>
+<p-dialog header="Veri Ayarları" [(visible)]="showDataSettings" [modal]="true">
+  Veri Ayarları
+</p-dialog>
