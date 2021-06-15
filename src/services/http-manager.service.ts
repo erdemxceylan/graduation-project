@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, Subject, throwError } from 'rxjs';
+import { EMPTY, Observable, Subject, throwError } from 'rxjs';
 import { catchError, map, takeUntil } from 'rxjs/operators';
 import { Nutrient } from 'src/models/nutrient.model';
+import { Settings, SETTINGS_INITIAL } from 'src/models/settings.model';
 
 @Injectable()
 export class HttpManager implements OnDestroy {
@@ -11,10 +12,10 @@ export class HttpManager implements OnDestroy {
 
   private _unsubscribe$: Subject<void> = new Subject<void>();
 
-  constructor(private _http: HttpClient) {}
+  constructor(private _http: HttpClient) { }
 
   public getAllNutrients(): Observable<Nutrient[]> {
-    return this._http.get<any>(`${this._baseUrl}/nutrients.json`).pipe (
+    return this._http.get<any>(`${this._baseUrl}/nutrients.json`).pipe(
       map((response: any) => {
         const nutrientList: Nutrient[] = [];
         for (const key in response) {
@@ -34,13 +35,42 @@ export class HttpManager implements OnDestroy {
     );
   }
 
+  public getDataSettings(): Observable<Settings> {
+    return this._http.get<any>(`${this._baseUrl}/settings.json`).pipe(
+      map((response: any) => {
+        const dataSettings: Settings = SETTINGS_INITIAL;
+        for (const key in response) {
+          dataSettings.key = key;
+          dataSettings.dailyCalorieNeed = response[key].daily_calorie_need;
+          dataSettings.weight = response[key].weight;
+          dataSettings.fatRatio = response[key].fat_ratio;
+          dataSettings.target.key = response[key].target;
+        }
+        return dataSettings;
+      }),
+      catchError((error: any) => throwError(error)),
+      takeUntil(this._unsubscribe$)
+    );
+  }
+
   public post() {
     this._http.post<any>(this._baseUrl, {});
   }
 
-  public put() {}
+  public updateDataSettings(dataSettings: Settings): Observable<void> {
+    return this._http.put<any>(`${this._baseUrl}/settings/${dataSettings.key}.json`, {
+      "daily_calorie_need": dataSettings.dailyCalorieNeed,
+      "weight": dataSettings.weight,
+      "fat_ratio": dataSettings.fatRatio,
+      "target": dataSettings.target.key
+    }).pipe(
+      map((response: any) => { }),
+      catchError((error: any) => throwError(error)),
+      takeUntil(this._unsubscribe$)
+    );
+  }
 
-  public delete() {}
+  public delete() { }
 
   public ngOnDestroy() {
     this._unsubscribe$.next();

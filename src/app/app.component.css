@@ -74,3 +74,37 @@
   max-height: 600px;
   overflow-y: scroll;
 }
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+}
+
+.settings__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings__item+.settings__item {
+  padding: 0;
+  padding-top: 2rem;
+}
+
+.settings__item>.settings-label {
+  padding: 0;
+  padding-right: 2rem;
+}
+
+:host ::ng-deep .settings-input:last-child .p-dropdown.p-component {
+  width: 192px;
+}
+
+.settings-button {
+  flex-grow: 1;
+}
+
+:host ::ng-deep .settings-button .p-button.p-component {
+  width: 100%;
+}

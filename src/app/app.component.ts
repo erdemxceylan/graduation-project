@@ -7,6 +7,9 @@ import { MenuItem } from 'primeng/api';
 import { fromEvent, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { PageTypes } from 'src/enums/page-types.enum';
+import { KeyValue } from 'src/models/key-value.model';
+import { Settings, SETTINGS_INITIAL } from 'src/models/settings.model';
+import { FitnessTargets } from 'src/enums/fitness-target.enum';
 
 @Component({
   selector: 'app-root',
@@ -15,6 +18,7 @@ import { PageTypes } from 'src/enums/page-types.enum';
   providers: [HttpManager],
 })
 export class AppComponent implements OnInit, OnDestroy {
+  public readonly FitnessTargets: typeof FitnessTargets = FitnessTargets;
   public readonly PageTypes: typeof PageTypes = PageTypes;
 
   public pageType: PageTypes = PageTypes.HomePage;
@@ -29,6 +33,13 @@ export class AppComponent implements OnInit, OnDestroy {
   public totalProtein: number = 0;
   public totalCalories: number = 0;
 
+  public dataSettings: Settings = SETTINGS_INITIAL;
+  public targets: KeyValue[] = [
+    { key: FitnessTargets.LosingWeight, value: 'Kilo Verme' },
+    { key: FitnessTargets.Bulking, value: 'Kütle Arttırma' },
+  ];
+  // public selectedTarget: KeyValue = { key: 0, value: '' };
+
   private _originalNutrientList: Nutrient[] = [];
   private _unsubscribe$: Subject<void> = new Subject<void>();
 
@@ -41,14 +52,31 @@ export class AppComponent implements OnInit, OnDestroy {
     this._primengConfig.ripple = true;
     this._setMenuItems();
     await this._getAllNutrients();
+    await this._getDataSettings();
     this._setMenuClickListeners();
-  } 
+  }
 
   private async _getAllNutrients() {
-    await this._httpManager.getAllNutrients().toPromise().then((nutrientList: Nutrient[]) => {
-      this.nutrientList = JSON.parse(JSON.stringify(nutrientList));
-      this._originalNutrientList = JSON.parse(JSON.stringify(nutrientList));
-    });
+    await this._httpManager
+      .getAllNutrients()
+      .toPromise()
+      .then((nutrientList: Nutrient[]) => {
+        this.nutrientList = JSON.parse(JSON.stringify(nutrientList));
+        this._originalNutrientList = JSON.parse(JSON.stringify(nutrientList));
+      });
+  }
+
+  private async _getDataSettings() {
+    await this._httpManager
+      .getDataSettings()
+      .toPromise()
+      .then((settings: Settings) => {
+        this.dataSettings.dailyCalorieNeed = settings.dailyCalorieNeed;
+        this.dataSettings.fatRatio = settings.fatRatio;
+        this.dataSettings.weight = settings.weight;
+        this.dataSettings.target.key = settings.target.key;
+        this.dataSettings.target.value = this._getTargetValue(this.dataSettings.target.key);
+      });
   }
 
   public onSelectedNutrientChanged() {
@@ -187,6 +215,32 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
+  private _getTargetValue(key: number): string {
+    return key === FitnessTargets.LosingWeight ? "Kilo Verme" : "Kütle Arttırma";
+  }
+
+  public onDataSettingsUpdateClicked() {
+    this._httpManager.updateDataSettings(this.dataSettings).toPromise().then(() => { this.showDataSettings = false; });
+  }
+
+  public getDailyCalorieIntervalLowerBound(): number {
+    if (this.dataSettings.target.key === FitnessTargets.LosingWeight)
+      return this.dataSettings.dailyCalorieNeed - 500;
+    return this.dataSettings.dailyCalorieNeed;
+  }
+
+  public getDailyCalorieIntervalUpperBound(): number {
+    if (this.dataSettings.target.key === FitnessTargets.Bulking)
+      return this.dataSettings.dailyCalorieNeed + 300;
+    return this.dataSettings.dailyCalorieNeed;
+  }
+
+  public getDailyProteinNeed(): number {
+    if (this.dataSettings.target.key === FitnessTargets.Bulking)
+      return this.dataSettings.weight * (100 - this.dataSettings.fatRatio) / 100 * 2;
+    return this.dataSettings.weight * (100 - this.dataSettings.fatRatio) / 100 * 1.5;
+  }
+
   public ngOnDestroy() {
     this._unsubscribe$.next();
     this._unsubscribe$.complete();
@@ -197,4 +251,5 @@ export class AppComponent implements OnInit, OnDestroy {
 /*
   - Mobile responsive design
   - Popuplar kapandıktan sonra, popup açılmadan önce hangi tab aktif ise o tab tekrar aktif olmalıdır.
-*/
+  - Update, delete, Add işlemlerinden sonra success message
+  */

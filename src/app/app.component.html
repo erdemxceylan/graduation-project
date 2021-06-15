@@ -50,8 +50,8 @@
                 <th>Besin</th>
                 <th>Miktar</th>
                 <th>Birim</th>
-                <th>Kalori</th>
-                <th>Protein</th>
+                <th>Kalori (kcal)</th>
+                <th>Protein (g)</th>
               </tr>
             </ng-template>
             <ng-template pTemplate="body" let-nutrient>
@@ -66,8 +66,8 @@
             <ng-template pTemplate="footer">
               <tr>
                 <td colspan="3">Alınan / Hedef :</td>
-                <td>{{ totalCalories | number }}{{' / '}}{{ '1,300-2000' }}</td>
-                <td>{{ totalProtein | number }}{{' / '}}{{ '150' }}</td>
+                <td>{{ totalCalories | number }}{{' / '}}{{ getDailyCalorieIntervalLowerBound() | number }}{{'-'}}{{ getDailyCalorieIntervalUpperBound() | number }}</td>
+                <td>{{ totalProtein | number }}{{' / '}}{{ getDailyProteinNeed() | number }}</td>
               </tr>
             </ng-template>
           </p-table>
@@ -84,38 +84,67 @@
 
         </div>
         <div class="input__item">
-          
+
         </div>
         <div class="input__item">
-          
+
         </div>
       </div>
       <div class="nutrient-list">
         <p-table [value]="nutrientList" selectionMode="single" [(selection)]="gridSelectedNutrient" dataKey="key"
-        (onRowSelect)="onRowSelect()" (onRowUnselect)="onRowUnselect()">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Besin</th>
-            <th>Miktar</th>
-            <th>Birim</th>
-            <th>Kalori</th>
-            <th>Protein</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-nutrient>
-          <tr [pSelectableRow]="nutrient">
-            <td>{{ nutrient.name }}</td>
-            <td>{{ nutrient.unitQuantity }}</td>
-            <td>{{ nutrient.unitType }}</td>
-            <td>{{ nutrient.calories | number }}</td>
-            <td>{{ nutrient.protein | number }}</td>
-          </tr>
-        </ng-template>
-      </p-table>
+          (onRowSelect)="onRowSelect()" (onRowUnselect)="onRowUnselect()">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Besin</th>
+              <th>Miktar</th>
+              <th>Birim</th>
+              <th>Kalori</th>
+              <th>Protein</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-nutrient>
+            <tr [pSelectableRow]="nutrient">
+              <td>{{ nutrient.name }}</td>
+              <td>{{ nutrient.unitQuantity }}</td>
+              <td>{{ nutrient.unitType }}</td>
+              <td>{{ nutrient.calories | number }}</td>
+              <td>{{ nutrient.protein | number }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
       </div>
     </div>
   </ng-container>
 </ng-template>
 <p-dialog header="Veri Ayarları" [(visible)]="showDataSettings" [modal]="true">
-  Veri Ayarları
+  <div class="settings">
+    <div class="settings__item">
+      <label class="settings-label">Günlük Kalori İhtiyacı :</label>
+      <p-inputNumber *ngIf="dataSettings.dailyCalorieNeed > 0" class="settings-input" mode="decimal"
+        [(ngModel)]="dataSettings.dailyCalorieNeed" [minFractionDigits]="2" [maxFractionDigits]="2" suffix=" kcal">
+      </p-inputNumber>
+    </div>
+    <div class="settings__item">
+      <label class="settings-label">Kilo :</label>
+      <p-inputNumber *ngIf="dataSettings.weight > 0" class="settings-input" mode="decimal"
+        [(ngModel)]="dataSettings.weight" [minFractionDigits]="2" [maxFractionDigits]="2" suffix=" kg">
+      </p-inputNumber>
+    </div>
+    <div class="settings__item">
+      <label class="settings-label">Yağ Oranı :</label>
+      <p-inputNumber *ngIf="dataSettings.fatRatio > 0" class="settings-input" mode="decimal"
+        [(ngModel)]="dataSettings.fatRatio" [minFractionDigits]="2" [maxFractionDigits]="2" suffix=" %">
+      </p-inputNumber>
+    </div>
+    <div class="settings__item">
+      <label class="settings-label">Fitness Hedefi :</label>
+      <p-dropdown *ngIf="dataSettings.target.key > 0" class="settings-input" [options]="targets"
+        [(ngModel)]="dataSettings.target" optionLabel="value" dataKey="key">
+      </p-dropdown>
+    </div>
+    <div class="settings__item">
+      <p-button class="settings-button" label="Güncelle" icon="pi pi-pencil" (onClick)="onDataSettingsUpdateClicked()">
+      </p-button>
+    </div>
+  </div>
 </p-dialog>
