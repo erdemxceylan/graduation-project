@@ -42,7 +42,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this._setMenuItems();
     await this._getAllNutrients();
     this._setMenuClickListeners();
-  }
+  } 
 
   private async _getAllNutrients() {
     await this._httpManager.getAllNutrients().toPromise().then((nutrientList: Nutrient[]) => {
@@ -172,7 +172,7 @@ export class AppComponent implements OnInit, OnDestroy {
       if (menuNurientList) {
         fromEvent(menuNurientList, 'click')
           .pipe(takeUntil(this._unsubscribe$))
-          .subscribe(async () =>  {
+          .subscribe(async () => {
             await this._getAllNutrients();
             this.pageType = PageTypes.NutrientList;
           });

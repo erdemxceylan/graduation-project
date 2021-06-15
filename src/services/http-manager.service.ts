@@ -14,7 +14,7 @@ export class HttpManager implements OnDestroy {
   constructor(private _http: HttpClient) {}
 
   public getAllNutrients(): Observable<Nutrient[]> {
-    return this._http.get<any>(`${this._baseUrl}/nutrients.json`).pipe(
+    return this._http.get<any>(`${this._baseUrl}/nutrients.json`).pipe (
       map((response: any) => {
         const nutrientList: Nutrient[] = [];
         for (const key in response) {
