@@ -8,7 +8,7 @@ import { fromEvent, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { PageTypes } from 'src/enums/page-types.enum';
 import { KeyValue } from 'src/models/key-value.model';
-import { Settings, SETTINGS_INITIAL } from 'src/models/settings.model';
+import { Settings } from 'src/models/settings.model';
 import { FitnessTargets } from 'src/enums/fitness-target.enum';
 
 @Component({
@@ -23,17 +23,19 @@ export class AppComponent implements OnInit, OnDestroy {
 
   public pageType: PageTypes = PageTypes.HomePage;
   public showDataSettings: boolean = false;
+  public showAddUpdateNutrient: boolean = false;
 
   public menuItems: MenuItem[] = [];
   public nutrientList: Nutrient[] = [];
   public selectedNutrient: Nutrient = new Nutrient();
   public enteredNutrientList: Nutrient[] = [];
   public gridSelectedNutrient: Nutrient = new Nutrient();
+  public gridNLSelectedNutrient: Nutrient = new Nutrient();
 
   public totalProtein: number = 0;
   public totalCalories: number = 0;
 
-  public dataSettings: Settings = SETTINGS_INITIAL;
+  public dataSettings: Settings = new Settings();
   public targets: KeyValue[] = [
     { key: FitnessTargets.LosingWeight, value: 'Kilo Verme' },
     { key: FitnessTargets.Bulking, value: 'Kütle Arttırma' },
@@ -71,6 +73,7 @@ export class AppComponent implements OnInit, OnDestroy {
       .getDataSettings()
       .toPromise()
       .then((settings: Settings) => {
+        this.dataSettings.key = settings.key;
         this.dataSettings.dailyCalorieNeed = settings.dailyCalorieNeed;
         this.dataSettings.fatRatio = settings.fatRatio;
         this.dataSettings.weight = settings.weight;
@@ -220,7 +223,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   public onDataSettingsUpdateClicked() {
-    this._httpManager.updateDataSettings(this.dataSettings).toPromise().then(() => { this.showDataSettings = false; });
+    this._httpManager
+      .updateDataSettings(this.dataSettings)
+      .toPromise()
+      .then(() => this.showDataSettings = false);
   }
 
   public getDailyCalorieIntervalLowerBound(): number {
@@ -239,6 +245,72 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.dataSettings.target.key === FitnessTargets.Bulking)
       return this.dataSettings.weight * (100 - this.dataSettings.fatRatio) / 100 * 2;
     return this.dataSettings.weight * (100 - this.dataSettings.fatRatio) / 100 * 1.5;
+  }
+
+  public onNLRowSelect() {
+
+  }
+
+  public onNLRowUnselect() {
+
+  }
+
+  public onNLAddClicked() {
+    this.showAddUpdateNutrient = true;
+    // if (this.selectedNutrient && this.enteredNutrientList) {
+    //   if (this.enteredNutrientList.some((n) => n.key === this.selectedNutrient.key)) {
+    //     const index = this.enteredNutrientList.findIndex(n => n.key === this.selectedNutrient.key);
+    //     const activeNutrient = this.enteredNutrientList[index];
+    //     const updatedNutrient = new Nutrient();
+    //     updatedNutrient.key = activeNutrient.key;
+    //     updatedNutrient.name = activeNutrient.name;
+    //     updatedNutrient.unitType = activeNutrient.unitType;
+    //     updatedNutrient.unitQuantity = activeNutrient.unitQuantity + this.selectedNutrient.unitQuantity;
+    //     updatedNutrient.calories = updatedNutrient.unitQuantity * this.selectedNutrient.calories;
+    //     updatedNutrient.protein = updatedNutrient.unitQuantity * this.selectedNutrient.protein;
+    //     this.enteredNutrientList[index] = updatedNutrient;
+    //   } else {
+    //     const newNutrient: Nutrient = new Nutrient();
+    //     newNutrient.key = this.selectedNutrient.key;
+    //     newNutrient.name = this.selectedNutrient.name;
+    //     newNutrient.unitType = this.selectedNutrient.unitType;
+    //     newNutrient.unitQuantity = this.selectedNutrient.unitQuantity;
+    //     newNutrient.protein = newNutrient.unitQuantity * this.selectedNutrient.protein;
+    //     newNutrient.calories = newNutrient.unitQuantity * this.selectedNutrient.calories;
+    //     this.enteredNutrientList.push(newNutrient);
+    //   }
+    //   this._clearItems(nutrientDropdown);
+    //   this._calculateTotals();
+    //}
+  }
+
+  public onNLEditClicked() {
+    //if (this.selectedNutrient && this.enteredNutrientList) {
+    // const index = this.enteredNutrientList.findIndex(n => n.key === this.selectedNutrient.key);
+    // const activeNutrient = this.enteredNutrientList[index];
+    // const updatedNutrient = new Nutrient();
+    // updatedNutrient.key = activeNutrient.key;
+    // updatedNutrient.name = activeNutrient.name;
+    // updatedNutrient.unitType = activeNutrient.unitType;
+    // updatedNutrient.unitQuantity = this.selectedNutrient.unitQuantity;
+    // updatedNutrient.calories = updatedNutrient.unitQuantity * this.selectedNutrient.calories;
+    // updatedNutrient.protein = updatedNutrient.unitQuantity * this.selectedNutrient.protein;
+    // this.enteredNutrientList[index] = updatedNutrient;
+    // this._clearItems(nutrientDropdown);
+    // this._calculateTotals();
+    // }
+  }
+
+  public onNLDeleteClicked() {
+    // if (this.selectedNutrient && this.enteredNutrientList) {
+    //   this.enteredNutrientList = this.enteredNutrientList.filter(n => n.key !== this.selectedNutrient.key);
+    // }
+    // this._clearItems(nutrientDropdown);
+    // this._calculateTotals();
+  }
+
+  public onNLSaveClicked() {
+    
   }
 
   public ngOnDestroy() {

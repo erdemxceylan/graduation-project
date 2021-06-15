@@ -1,11 +1,17 @@
 import { KeyValue } from "./key-value.model";
 
-export const SETTINGS_INITIAL = { key: "", dailyCalorieNeed: 0, weight: 0, fatRatio: 0, target: { key: 0, value: "" } };
+export class Settings {
+    public key: string;
+    public dailyCalorieNeed: number;
+    public weight: number;
+    public fatRatio: number;
+    public target: KeyValue;
 
-export interface Settings {
-    key: string;
-    dailyCalorieNeed: number;
-    weight: number;
-    fatRatio: number;
-    target: KeyValue;
+    constructor() {
+        this.key = "";
+        this.dailyCalorieNeed = 0;
+        this.weight = 0;
+        this.fatRatio = 0;
+        this.target = new KeyValue();
+    }
 }

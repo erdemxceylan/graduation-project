@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, OnDestroy } from '@angular/core';
-import { EMPTY, Observable, Subject, throwError } from 'rxjs';
+import { Observable, Subject, throwError } from 'rxjs';
 import { catchError, map, takeUntil } from 'rxjs/operators';
 import { Nutrient } from 'src/models/nutrient.model';
-import { Settings, SETTINGS_INITIAL } from 'src/models/settings.model';
+import { Settings } from 'src/models/settings.model';
 
 @Injectable()
 export class HttpManager implements OnDestroy {
@@ -38,7 +38,7 @@ export class HttpManager implements OnDestroy {
   public getDataSettings(): Observable<Settings> {
     return this._http.get<any>(`${this._baseUrl}/settings.json`).pipe(
       map((response: any) => {
-        const dataSettings: Settings = SETTINGS_INITIAL;
+        const dataSettings: Settings = new Settings();
         for (const key in response) {
           dataSettings.key = key;
           dataSettings.dailyCalorieNeed = response[key].daily_calorie_need;

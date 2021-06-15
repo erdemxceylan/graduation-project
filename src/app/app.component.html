@@ -66,7 +66,9 @@
             <ng-template pTemplate="footer">
               <tr>
                 <td colspan="3">Alınan / Hedef :</td>
-                <td>{{ totalCalories | number }}{{' / '}}{{ getDailyCalorieIntervalLowerBound() | number }}{{'-'}}{{ getDailyCalorieIntervalUpperBound() | number }}</td>
+                <td>
+                  {{ totalCalories | number }}{{' / '}}{{ getDailyCalorieIntervalLowerBound() | number }}{{'-'}}{{ getDailyCalorieIntervalUpperBound() | number }}
+                </td>
                 <td>{{ totalProtein | number }}{{' / '}}{{ getDailyProteinNeed() | number }}</td>
               </tr>
             </ng-template>
@@ -79,20 +81,23 @@
 <ng-template #pageTypeNutrientList>
   <ng-container *ngIf="nutrientList && nutrientList.length > 0">
     <div class="app-layout">
-      <div class="inputs">
-        <div class="input__item">
-
+      <div class="nlinputs">
+        <div class="nlinput__item">
+          <p-button class="buttons__item" styleClass="p-button-success" label="Ekle" (onClick)="onNLAddClicked()" icon="pi pi-plus">
+          </p-button>
         </div>
-        <div class="input__item">
-
+        <div class="nlinput__item">
+          <p-button class="buttons__item" label="Güncelle" icon="pi pi-pencil" (onClick)="onNLEditClicked()"
+            [disabled]="!gridNLSelectedNutrient || gridNLSelectedNutrient.key === ''"></p-button>
         </div>
-        <div class="input__item">
-
+        <div class="nlinput__item">
+          <p-button class="buttons__item" styleClass="p-button-danger" label="Sil" icon="pi pi-trash" (onClick)="onNLDeleteClicked()"
+            [disabled]="!gridNLSelectedNutrient || gridNLSelectedNutrient.key === ''"></p-button>
         </div>
       </div>
       <div class="nutrient-list">
-        <p-table [value]="nutrientList" selectionMode="single" [(selection)]="gridSelectedNutrient" dataKey="key"
-          (onRowSelect)="onRowSelect()" (onRowUnselect)="onRowUnselect()">
+        <p-table [value]="nutrientList" selectionMode="single" [(selection)]="gridNLSelectedNutrient" dataKey="key"
+          (onRowSelect)="onNLRowSelect()" (onRowUnselect)="onNLRowUnselect()">
           <ng-template pTemplate="header">
             <tr>
               <th>Besin</th>
@@ -118,32 +123,66 @@
 </ng-template>
 <p-dialog header="Veri Ayarları" [(visible)]="showDataSettings" [modal]="true">
   <div class="settings">
-    <div class="settings__item">
+    <div *ngIf="dataSettings.dailyCalorieNeed > 0" class="settings__item">
       <label class="settings-label">Günlük Kalori İhtiyacı :</label>
-      <p-inputNumber *ngIf="dataSettings.dailyCalorieNeed > 0" class="settings-input" mode="decimal"
-        [(ngModel)]="dataSettings.dailyCalorieNeed" [minFractionDigits]="2" [maxFractionDigits]="2" suffix=" kcal">
+      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.dailyCalorieNeed"
+        [minFractionDigits]="2" [maxFractionDigits]="2" suffix=" kcal">
       </p-inputNumber>
     </div>
-    <div class="settings__item">
+    <div *ngIf="dataSettings.weight > 0" class="settings__item">
       <label class="settings-label">Kilo :</label>
-      <p-inputNumber *ngIf="dataSettings.weight > 0" class="settings-input" mode="decimal"
-        [(ngModel)]="dataSettings.weight" [minFractionDigits]="2" [maxFractionDigits]="2" suffix=" kg">
+      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.weight" [minFractionDigits]="2"
+        [maxFractionDigits]="2" suffix=" kg">
       </p-inputNumber>
     </div>
-    <div class="settings__item">
+    <div *ngIf="dataSettings.fatRatio > 0" class="settings__item">
       <label class="settings-label">Yağ Oranı :</label>
-      <p-inputNumber *ngIf="dataSettings.fatRatio > 0" class="settings-input" mode="decimal"
-        [(ngModel)]="dataSettings.fatRatio" [minFractionDigits]="2" [maxFractionDigits]="2" suffix=" %">
+      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.fatRatio" [minFractionDigits]="2"
+        [maxFractionDigits]="2" suffix=" %">
       </p-inputNumber>
     </div>
-    <div class="settings__item">
+    <div *ngIf="dataSettings.target.key > 0" class="settings__item">
       <label class="settings-label">Fitness Hedefi :</label>
-      <p-dropdown *ngIf="dataSettings.target.key > 0" class="settings-input" [options]="targets"
-        [(ngModel)]="dataSettings.target" optionLabel="value" dataKey="key">
+      <p-dropdown class="settings-input" [options]="targets" [(ngModel)]="dataSettings.target" optionLabel="value"
+        dataKey="key">
       </p-dropdown>
     </div>
-    <div class="settings__item">
+    <div *ngIf="dataSettings.key !== ''" class="settings__item">
       <p-button class="settings-button" label="Güncelle" icon="pi pi-pencil" (onClick)="onDataSettingsUpdateClicked()">
+      </p-button>
+    </div>
+  </div>
+</p-dialog>
+<p-dialog header="Besin Ekle veya Güncelle" [(visible)]="showAddUpdateNutrient" [modal]="true">
+  <div class="settings">
+    <div class="settings__item">
+      <label class="settings-label">Besin :</label>
+
+    </div>
+    <div class="settings__item">
+      <label class="settings-label">Miktar :</label>
+      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.weight" [minFractionDigits]="2"
+        [maxFractionDigits]="2" suffix=" kg">
+      </p-inputNumber>
+    </div>
+    <div class="settings__item">
+      <label class="settings-label">Birim :</label>
+
+    </div>
+    <div class="settings__item">
+      <label class="settings-label">Kalori :</label>
+      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.weight" [minFractionDigits]="2"
+        [maxFractionDigits]="2" suffix=" kcal">
+      </p-inputNumber>
+    </div>
+    <div class="settings__item">
+      <label class="settings-label">Protein :</label>
+      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.weight" [minFractionDigits]="2"
+        [maxFractionDigits]="2" suffix=" g">
+      </p-inputNumber>
+    </div>
+    <div class="settings__item">
+      <p-button class="settings-button" label="Kaydet" icon="pi pi-save" (onClick)="onNLSaveClicked()">
       </p-button>
     </div>
   </div>

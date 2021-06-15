@@ -1,6 +1,9 @@
-export const KEY_VALUE_INITIAL = { key: 0, value: "" };
+export class KeyValue {
+    public key: number;
+    public value: string;
 
-export interface KeyValue {
-    key: number,
-    value: string
+    constructor() {
+        this.key = 0;
+        this.value = "";
+    }
 }

@@ -108,3 +108,17 @@
 :host ::ng-deep .settings-button .p-button.p-component {
   width: 100%;
 }
+
+.nlinputs {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.nutrient-list {
+  margin-top: 2rem;
+}
+
+.nlinput__item+.nlinput__item {
+  padding: 0;
+  padding-left: 2rem;
+}
