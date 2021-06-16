@@ -9,7 +9,8 @@ import { takeUntil } from 'rxjs/operators';
 import { PageTypes } from 'src/enums/page-types.enum';
 import { KeyValue } from 'src/models/key-value.model';
 import { Settings } from 'src/models/settings.model';
-import { FitnessTargets } from 'src/enums/fitness-target.enum';
+import { FitnessTargets } from 'src/enums/fitness-targets.enum';
+import { ProcessTypes } from 'src/enums/process-types.enum';
 
 @Component({
   selector: 'app-root',
@@ -20,7 +21,9 @@ import { FitnessTargets } from 'src/enums/fitness-target.enum';
 export class AppComponent implements OnInit, OnDestroy {
   public readonly FitnessTargets: typeof FitnessTargets = FitnessTargets;
   public readonly PageTypes: typeof PageTypes = PageTypes;
+  public readonly ProcessTypes: typeof ProcessTypes = ProcessTypes;
 
+  public processType: ProcessTypes = ProcessTypes.Add;
   public pageType: PageTypes = PageTypes.HomePage;
   public showDataSettings: boolean = false;
   public showAddUpdateNutrient: boolean = false;
@@ -40,7 +43,8 @@ export class AppComponent implements OnInit, OnDestroy {
     { key: FitnessTargets.LosingWeight, value: 'Kilo Verme' },
     { key: FitnessTargets.Bulking, value: 'Kütle Arttırma' },
   ];
-  // public selectedTarget: KeyValue = { key: 0, value: '' };
+
+  public addUpdatePopupNutrientModel: Nutrient = new Nutrient();
 
   private _originalNutrientList: Nutrient[] = [];
   private _unsubscribe$: Subject<void> = new Subject<void>();
@@ -59,8 +63,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private async _getAllNutrients() {
-    await this._httpManager
-      .getAllNutrients()
+    await this._httpManager.getAllNutrients()
+      .pipe(takeUntil(this._unsubscribe$))
       .toPromise()
       .then((nutrientList: Nutrient[]) => {
         this.nutrientList = JSON.parse(JSON.stringify(nutrientList));
@@ -69,8 +73,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private async _getDataSettings() {
-    await this._httpManager
-      .getDataSettings()
+    await this._httpManager.getDataSettings()
+      .pipe(takeUntil(this._unsubscribe$))
       .toPromise()
       .then((settings: Settings) => {
         this.dataSettings.key = settings.key;
@@ -183,8 +187,6 @@ export class AppComponent implements OnInit, OnDestroy {
   private _setMenuItems() {
     this.menuItems = [
       { id: 'menu-home', label: 'Anasayfa', icon: 'pi pi-fw pi-home' },
-      // { id: 'menu-add', label: 'Yeni Besin', icon: 'pi pi-fw pi-plus' },
-      // { id: 'menu-edit', label: 'Besin Güncelle', icon: 'pi pi-fw pi-pencil' },
       { id: 'menu-list', label: 'Besin Listesi', icon: 'pi pi-fw pi-list' },
       { id: 'menu-settings', label: 'Veri Ayarları', icon: 'pi pi-fw pi-cog' },
     ];
@@ -196,7 +198,10 @@ export class AppComponent implements OnInit, OnDestroy {
       if (menuHome) {
         fromEvent(menuHome, 'click')
           .pipe(takeUntil(this._unsubscribe$))
-          .subscribe(() => this.pageType = PageTypes.HomePage);
+          .subscribe(() => {
+            this._clearNutrientModels();
+            this.pageType = PageTypes.HomePage
+          });
       }
 
       const menuNurientList = document.getElementById('menu-list');
@@ -205,6 +210,7 @@ export class AppComponent implements OnInit, OnDestroy {
           .pipe(takeUntil(this._unsubscribe$))
           .subscribe(async () => {
             await this._getAllNutrients();
+            this._clearNutrientModels();
             this.pageType = PageTypes.NutrientList;
           });
       }
@@ -213,9 +219,19 @@ export class AppComponent implements OnInit, OnDestroy {
       if (menuSettings) {
         fromEvent(menuSettings, 'click')
           .pipe(takeUntil(this._unsubscribe$))
-          .subscribe(() => this.showDataSettings = true);
+          .subscribe(() => {
+            this._clearNutrientModels();
+            this.showDataSettings = true
+          });
       }
     });
+  }
+
+  private _clearNutrientModels() {
+    this.selectedNutrient = new Nutrient();
+    this.addUpdatePopupNutrientModel = new Nutrient();
+    this.gridSelectedNutrient = new Nutrient();
+    this.gridNLSelectedNutrient = new Nutrient();
   }
 
   private _getTargetValue(key: number): string {
@@ -223,8 +239,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   public onDataSettingsUpdateClicked() {
-    this._httpManager
-      .updateDataSettings(this.dataSettings)
+    this._httpManager.updateDataSettings(this.dataSettings)
+      .pipe(takeUntil(this._unsubscribe$))
       .toPromise()
       .then(() => this.showDataSettings = false);
   }
@@ -252,65 +268,63 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   public onNLRowUnselect() {
-
+    this.addUpdatePopupNutrientModel = new Nutrient();
   }
 
   public onNLAddClicked() {
+    this._clearNutrientModels();
+    this.processType = ProcessTypes.Add;
     this.showAddUpdateNutrient = true;
-    // if (this.selectedNutrient && this.enteredNutrientList) {
-    //   if (this.enteredNutrientList.some((n) => n.key === this.selectedNutrient.key)) {
-    //     const index = this.enteredNutrientList.findIndex(n => n.key === this.selectedNutrient.key);
-    //     const activeNutrient = this.enteredNutrientList[index];
-    //     const updatedNutrient = new Nutrient();
-    //     updatedNutrient.key = activeNutrient.key;
-    //     updatedNutrient.name = activeNutrient.name;
-    //     updatedNutrient.unitType = activeNutrient.unitType;
-    //     updatedNutrient.unitQuantity = activeNutrient.unitQuantity + this.selectedNutrient.unitQuantity;
-    //     updatedNutrient.calories = updatedNutrient.unitQuantity * this.selectedNutrient.calories;
-    //     updatedNutrient.protein = updatedNutrient.unitQuantity * this.selectedNutrient.protein;
-    //     this.enteredNutrientList[index] = updatedNutrient;
-    //   } else {
-    //     const newNutrient: Nutrient = new Nutrient();
-    //     newNutrient.key = this.selectedNutrient.key;
-    //     newNutrient.name = this.selectedNutrient.name;
-    //     newNutrient.unitType = this.selectedNutrient.unitType;
-    //     newNutrient.unitQuantity = this.selectedNutrient.unitQuantity;
-    //     newNutrient.protein = newNutrient.unitQuantity * this.selectedNutrient.protein;
-    //     newNutrient.calories = newNutrient.unitQuantity * this.selectedNutrient.calories;
-    //     this.enteredNutrientList.push(newNutrient);
-    //   }
-    //   this._clearItems(nutrientDropdown);
-    //   this._calculateTotals();
-    //}
   }
 
   public onNLEditClicked() {
-    //if (this.selectedNutrient && this.enteredNutrientList) {
-    // const index = this.enteredNutrientList.findIndex(n => n.key === this.selectedNutrient.key);
-    // const activeNutrient = this.enteredNutrientList[index];
-    // const updatedNutrient = new Nutrient();
-    // updatedNutrient.key = activeNutrient.key;
-    // updatedNutrient.name = activeNutrient.name;
-    // updatedNutrient.unitType = activeNutrient.unitType;
-    // updatedNutrient.unitQuantity = this.selectedNutrient.unitQuantity;
-    // updatedNutrient.calories = updatedNutrient.unitQuantity * this.selectedNutrient.calories;
-    // updatedNutrient.protein = updatedNutrient.unitQuantity * this.selectedNutrient.protein;
-    // this.enteredNutrientList[index] = updatedNutrient;
-    // this._clearItems(nutrientDropdown);
-    // this._calculateTotals();
-    // }
+    if (this.gridNLSelectedNutrient && this.gridNLSelectedNutrient.key !== "") {
+      this.addUpdatePopupNutrientModel.key = this.gridNLSelectedNutrient.key;
+      this.addUpdatePopupNutrientModel.name = this.gridNLSelectedNutrient.name;
+      this.addUpdatePopupNutrientModel.unitType = this.gridNLSelectedNutrient.unitType;
+      this.addUpdatePopupNutrientModel.calories = this.gridNLSelectedNutrient.calories;
+      this.addUpdatePopupNutrientModel.protein = this.gridNLSelectedNutrient.protein;
+      this.processType = ProcessTypes.Update;
+      this.showAddUpdateNutrient = true;
+    }
   }
 
-  public onNLDeleteClicked() {
-    // if (this.selectedNutrient && this.enteredNutrientList) {
-    //   this.enteredNutrientList = this.enteredNutrientList.filter(n => n.key !== this.selectedNutrient.key);
-    // }
-    // this._clearItems(nutrientDropdown);
-    // this._calculateTotals();
+  public async onNLDeleteClicked() {
+    if (this.gridNLSelectedNutrient && this.gridNLSelectedNutrient.key !== "") {
+      let isDeleted: boolean = false;
+      await this._httpManager.deleteNutrient(this.gridNLSelectedNutrient.key)
+        .pipe(takeUntil(this._unsubscribe$))
+        .toPromise()
+        .then((result: boolean) => isDeleted = result);
+      if (isDeleted) {
+        await this._getAllNutrients();
+        this.gridNLSelectedNutrient = new Nutrient();
+        this.enteredNutrientList = [];
+      }
+    }
   }
 
-  public onNLSaveClicked() {
-    
+  public async onNLSaveClicked() {
+    let isUpdated: boolean = false;
+    let isAdded: boolean = false;
+    if (this.processType === ProcessTypes.Add) {
+      await this._httpManager.addNutrient(this.addUpdatePopupNutrientModel)
+        .pipe(takeUntil(this._unsubscribe$))
+        .toPromise()
+        .then((result: boolean) => isAdded = result);
+    }
+    else if (this.processType === ProcessTypes.Update) {
+      await this._httpManager.updateNutrient(this.addUpdatePopupNutrientModel)
+        .pipe(takeUntil(this._unsubscribe$))
+        .toPromise()
+        .then((result: boolean) => isUpdated = result);
+    }
+    if (isAdded || isUpdated) {
+      await this._getAllNutrients();
+      this.gridNLSelectedNutrient = new Nutrient();
+      if (isUpdated) this.enteredNutrientList = [];
+      this.showAddUpdateNutrient = false;
+    }
   }
 
   public ngOnDestroy() {
@@ -324,4 +338,5 @@ export class AppComponent implements OnInit, OnDestroy {
   - Mobile responsive design
   - Popuplar kapandıktan sonra, popup açılmadan önce hangi tab aktif ise o tab tekrar aktif olmalıdır.
   - Update, delete, Add işlemlerinden sonra success message
+  - Data settings popup da değşiklik yapıp kaydetmediği zaman yanlış veri gösteriyor
   */

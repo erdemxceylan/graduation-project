@@ -23,8 +23,8 @@
           </p-dropdown>
         </div>
         <div class="inputs__item">
-          <p-inputNumber mode="decimal" [(ngModel)]="selectedNutrient.unitQuantity" [minFractionDigits]="2"
-            [maxFractionDigits]="2" [suffix]="' ' + selectedNutrient.unitType" [disabled]="selectedNutrient.key === ''">
+          <p-inputNumber mode="decimal" [(ngModel)]="selectedNutrient.unitQuantity" [minFractionDigits]="1"
+            [maxFractionDigits]="1" [suffix]="' ' + selectedNutrient.unitType" [disabled]="selectedNutrient.key === ''">
           </p-inputNumber>
         </div>
         <div class="inputs__item">
@@ -83,7 +83,8 @@
     <div class="app-layout">
       <div class="nlinputs">
         <div class="nlinput__item">
-          <p-button class="buttons__item" styleClass="p-button-success" label="Ekle" (onClick)="onNLAddClicked()" icon="pi pi-plus">
+          <p-button class="buttons__item" styleClass="p-button-success" label="Ekle" (onClick)="onNLAddClicked()"
+            icon="pi pi-plus">
           </p-button>
         </div>
         <div class="nlinput__item">
@@ -91,8 +92,9 @@
             [disabled]="!gridNLSelectedNutrient || gridNLSelectedNutrient.key === ''"></p-button>
         </div>
         <div class="nlinput__item">
-          <p-button class="buttons__item" styleClass="p-button-danger" label="Sil" icon="pi pi-trash" (onClick)="onNLDeleteClicked()"
-            [disabled]="!gridNLSelectedNutrient || gridNLSelectedNutrient.key === ''"></p-button>
+          <p-button class="buttons__item" styleClass="p-button-danger" label="Sil" icon="pi pi-trash"
+            (onClick)="onNLDeleteClicked()" [disabled]="!gridNLSelectedNutrient || gridNLSelectedNutrient.key === ''">
+          </p-button>
         </div>
       </div>
       <div class="nutrient-list">
@@ -126,19 +128,19 @@
     <div *ngIf="dataSettings.dailyCalorieNeed > 0" class="settings__item">
       <label class="settings-label">Günlük Kalori İhtiyacı :</label>
       <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.dailyCalorieNeed"
-        [minFractionDigits]="2" [maxFractionDigits]="2" suffix=" kcal">
+        [minFractionDigits]="4" [maxFractionDigits]="4" suffix=" kcal">
       </p-inputNumber>
     </div>
     <div *ngIf="dataSettings.weight > 0" class="settings__item">
       <label class="settings-label">Kilo :</label>
-      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.weight" [minFractionDigits]="2"
-        [maxFractionDigits]="2" suffix=" kg">
+      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.weight" [minFractionDigits]="4"
+        [maxFractionDigits]="4" suffix=" kg">
       </p-inputNumber>
     </div>
     <div *ngIf="dataSettings.fatRatio > 0" class="settings__item">
       <label class="settings-label">Yağ Oranı :</label>
-      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.fatRatio" [minFractionDigits]="2"
-        [maxFractionDigits]="2" suffix=" %">
+      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.fatRatio" [minFractionDigits]="4"
+        [maxFractionDigits]="4" suffix=" %">
       </p-inputNumber>
     </div>
     <div *ngIf="dataSettings.target.key > 0" class="settings__item">
@@ -153,36 +155,38 @@
     </div>
   </div>
 </p-dialog>
-<p-dialog header="Besin Ekle veya Güncelle" [(visible)]="showAddUpdateNutrient" [modal]="true">
-  <div class="settings">
-    <div class="settings__item">
-      <label class="settings-label">Besin :</label>
-
+<p-dialog [header]="processType === ProcessTypes.Add ? 'Besin Ekle' : 'Besin Güncelle'"
+  [(visible)]="showAddUpdateNutrient" [modal]="true">
+  <div class="add-update-nutrient">
+    <div class="add-update-nutrient__item">
+      <label class="add-update-nutrient-label">Besin :</label>
+      <input class="add-update-nutrient-input" type="text" pInputText [(ngModel)]="addUpdatePopupNutrientModel.name" />
     </div>
-    <div class="settings__item">
-      <label class="settings-label">Miktar :</label>
-      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.weight" [minFractionDigits]="2"
-        [maxFractionDigits]="2" suffix=" kg">
+    <!-- <div class="add-update-nutrient__item">
+      <label class="add-update-nutrient-label">Miktar :</label>
+      <p-inputNumber class="add-update-nutrient-input" mode="decimal" [(ngModel)]="dataSettings.weight" [minFractionDigits]="4"
+        [maxFractionDigits]="4" suffix=" kg">
+      </p-inputNumber>
+    </div> -->
+    <div class="add-update-nutrient__item">
+      <label class="add-update-nutrient-label">Birim :</label>
+      <input class="add-update-nutrient-input" type="text" pInputText
+        [(ngModel)]="addUpdatePopupNutrientModel.unitType" />
+    </div>
+    <div class="add-update-nutrient__item">
+      <label class="add-update-nutrient-label">Kalori :</label>
+      <p-inputNumber class="add-update-nutrient-input" mode="decimal" [(ngModel)]="addUpdatePopupNutrientModel.calories"
+        [minFractionDigits]="4" [maxFractionDigits]="4" suffix=" kcal">
       </p-inputNumber>
     </div>
-    <div class="settings__item">
-      <label class="settings-label">Birim :</label>
-
-    </div>
-    <div class="settings__item">
-      <label class="settings-label">Kalori :</label>
-      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.weight" [minFractionDigits]="2"
-        [maxFractionDigits]="2" suffix=" kcal">
+    <div class="add-update-nutrient__item">
+      <label class="add-update-nutrient-label">Protein :</label>
+      <p-inputNumber class="add-update-nutrient-input" mode="decimal" [(ngModel)]="addUpdatePopupNutrientModel.protein"
+        [minFractionDigits]="4" [maxFractionDigits]="4" suffix=" g">
       </p-inputNumber>
     </div>
-    <div class="settings__item">
-      <label class="settings-label">Protein :</label>
-      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.weight" [minFractionDigits]="2"
-        [maxFractionDigits]="2" suffix=" g">
-      </p-inputNumber>
-    </div>
-    <div class="settings__item">
-      <p-button class="settings-button" label="Kaydet" icon="pi pi-save" (onClick)="onNLSaveClicked()">
+    <div class="add-update-nutrient__item">
+      <p-button class="add-update-nutrient-button" label="Kaydet" icon="pi pi-save" (onClick)="onNLSaveClicked()">
       </p-button>
     </div>
   </div>
