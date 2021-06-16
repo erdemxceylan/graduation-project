@@ -67,9 +67,11 @@
               <tr>
                 <td colspan="3">Alınan / Hedef :</td>
                 <td>
-                  {{ totalCalories | number }}{{' / '}}{{ getDailyCalorieIntervalLowerBound() | number }}{{'-'}}{{ getDailyCalorieIntervalUpperBound() | number }}
+                  <span [class]="getTotalCaloriesClass()">{{ totalCalories | number }}</span>{{' / '}}{{ getDailyCalorieIntervalLowerBound() | number }}{{'-'}}{{ getDailyCalorieIntervalUpperBound() | number }}
                 </td>
-                <td>{{ totalProtein | number }}{{' / '}}{{ getDailyProteinNeed() | number }}</td>
+                <td>
+                  <span [class]="getTotalProteinClass()">{{ totalProtein | number }}</span>{{' / '}}{{ getDailyProteinNeed() | number }}
+                </td>
               </tr>
             </ng-template>
           </p-table>
@@ -123,29 +125,29 @@
     </div>
   </ng-container>
 </ng-template>
-<p-dialog header="Veri Ayarları" [(visible)]="showDataSettings" [modal]="true">
+<p-dialog header="Veri Ayarları" [(visible)]="showDataSettings" [modal]="true"  (onHide)="onDataSettingsHide()">
   <div class="settings">
     <div *ngIf="dataSettings.dailyCalorieNeed > 0" class="settings__item">
       <label class="settings-label">Günlük Kalori İhtiyacı :</label>
-      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.dailyCalorieNeed"
-        [minFractionDigits]="4" [maxFractionDigits]="4" suffix=" kcal">
+      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettingsPopupModel.dailyCalorieNeed"
+        [minFractionDigits]="2" [maxFractionDigits]="2" suffix=" kcal">
       </p-inputNumber>
     </div>
     <div *ngIf="dataSettings.weight > 0" class="settings__item">
       <label class="settings-label">Kilo :</label>
-      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.weight" [minFractionDigits]="4"
-        [maxFractionDigits]="4" suffix=" kg">
+      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettingsPopupModel.weight" [minFractionDigits]="2"
+        [maxFractionDigits]="2" suffix=" kg">
       </p-inputNumber>
     </div>
     <div *ngIf="dataSettings.fatRatio > 0" class="settings__item">
       <label class="settings-label">Yağ Oranı :</label>
-      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettings.fatRatio" [minFractionDigits]="4"
-        [maxFractionDigits]="4" suffix=" %">
+      <p-inputNumber class="settings-input" mode="decimal" [(ngModel)]="dataSettingsPopupModel.fatRatio" [minFractionDigits]="2"
+        [maxFractionDigits]="2" suffix=" %">
       </p-inputNumber>
     </div>
     <div *ngIf="dataSettings.target.key > 0" class="settings__item">
       <label class="settings-label">Fitness Hedefi :</label>
-      <p-dropdown class="settings-input" [options]="targets" [(ngModel)]="dataSettings.target" optionLabel="value"
+      <p-dropdown class="settings-input" [options]="targets" [(ngModel)]="dataSettingsPopupModel.target" optionLabel="value"
         dataKey="key">
       </p-dropdown>
     </div>
@@ -156,7 +158,7 @@
   </div>
 </p-dialog>
 <p-dialog [header]="processType === ProcessTypes.Add ? 'Besin Ekle' : 'Besin Güncelle'"
-  [(visible)]="showAddUpdateNutrient" [modal]="true">
+  [(visible)]="showAddUpdateNutrient" [modal]="true" (onHide)="onAddUpdateNutrientHide()">
   <div class="add-update-nutrient">
     <div class="add-update-nutrient__item">
       <label class="add-update-nutrient-label">Besin :</label>

@@ -29,7 +29,11 @@ export class HttpManager implements OnDestroy {
           nutrient.protein = response[key].protein;
           nutrientList.push(nutrient);
         }
-        return nutrientList;
+        return nutrientList.sort((a: Nutrient, b: Nutrient) => {
+            if (a.name < b.name) { return -1; }
+            if (a.name > b.name) { return 1; }
+            return 0;
+          });
       }),
       catchError((error: any) => throwError(error)),
       takeUntil(this._unsubscribe$)

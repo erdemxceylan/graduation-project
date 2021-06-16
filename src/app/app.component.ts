@@ -5,7 +5,7 @@ import { Dropdown } from 'primeng/dropdown';
 import { PrimeNGConfig } from 'primeng/api';
 import { MenuItem } from 'primeng/api';
 import { fromEvent, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, timeoutWith } from 'rxjs/operators';
 import { PageTypes } from 'src/enums/page-types.enum';
 import { KeyValue } from 'src/models/key-value.model';
 import { Settings } from 'src/models/settings.model';
@@ -44,6 +44,7 @@ export class AppComponent implements OnInit, OnDestroy {
     { key: FitnessTargets.Bulking, value: 'Kütle Arttırma' },
   ];
 
+  public dataSettingsPopupModel: Settings = new Settings();
   public addUpdatePopupNutrientModel: Nutrient = new Nutrient();
 
   private _originalNutrientList: Nutrient[] = [];
@@ -82,7 +83,14 @@ export class AppComponent implements OnInit, OnDestroy {
         this.dataSettings.fatRatio = settings.fatRatio;
         this.dataSettings.weight = settings.weight;
         this.dataSettings.target.key = settings.target.key;
-        this.dataSettings.target.value = this._getTargetValue(this.dataSettings.target.key);
+        this.dataSettings.target.value = this._getTargetValue(settings.target.key);
+
+        this.dataSettingsPopupModel.key = settings.key;
+        this.dataSettingsPopupModel.dailyCalorieNeed = settings.dailyCalorieNeed;
+        this.dataSettingsPopupModel.fatRatio = settings.fatRatio;
+        this.dataSettingsPopupModel.weight = settings.weight;
+        this.dataSettingsPopupModel.target.key = settings.target.key;
+        this.dataSettingsPopupModel.target.value = this._getTargetValue(settings.target.key);
       });
   }
 
@@ -238,11 +246,18 @@ export class AppComponent implements OnInit, OnDestroy {
     return key === FitnessTargets.LosingWeight ? "Kilo Verme" : "Kütle Arttırma";
   }
 
-  public onDataSettingsUpdateClicked() {
-    this._httpManager.updateDataSettings(this.dataSettings)
-      .pipe(takeUntil(this._unsubscribe$))
-      .toPromise()
-      .then(() => this.showDataSettings = false);
+  public async onDataSettingsUpdateClicked() {
+    if (this.dataSettingsPopupModel && this.dataSettingsPopupModel.key !== "") {
+      let isUpdated: boolean = false;
+      await this._httpManager.updateDataSettings(this.dataSettingsPopupModel)
+        .pipe(takeUntil(this._unsubscribe$))
+        .toPromise()
+        .then((result: boolean) => isUpdated = result);
+      if (isUpdated) {
+        await this._getDataSettings();
+        this.showDataSettings = false;
+      }
+    }
   }
 
   public getDailyCalorieIntervalLowerBound(): number {
@@ -327,6 +342,36 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  public getTotalCaloriesClass() {
+    if (this.totalCalories > this.getDailyCalorieIntervalUpperBound())
+      return "red";
+    else if (this.totalCalories >= this.getDailyCalorieIntervalLowerBound() && this.totalCalories <= this.getDailyCalorieIntervalUpperBound())
+      return "green";
+    return null;
+  }
+
+  public getTotalProteinClass() {
+    if (this.totalProtein >= this.getDailyProteinNeed())
+      return "green";
+    return null;
+  }
+
+  public onAddUpdateNutrientHide() {
+    this.addUpdatePopupNutrientModel = new Nutrient();
+  }
+
+  public onDataSettingsHide() {
+    if (this.dataSettings && this.dataSettings.key !== "") {
+      this.dataSettingsPopupModel = new Settings();
+      this.dataSettingsPopupModel.key = this.dataSettings.key;
+      this.dataSettingsPopupModel.dailyCalorieNeed = this.dataSettings.dailyCalorieNeed;
+      this.dataSettingsPopupModel.fatRatio = this.dataSettings.fatRatio;
+      this.dataSettingsPopupModel.weight = this.dataSettings.weight;
+      this.dataSettingsPopupModel.target.key = this.dataSettings.target.key;
+      this.dataSettingsPopupModel.target.value = this._getTargetValue(this.dataSettings.target.key);
+    }
+  }
+
   public ngOnDestroy() {
     this._unsubscribe$.next();
     this._unsubscribe$.complete();
@@ -338,5 +383,4 @@ export class AppComponent implements OnInit, OnDestroy {
   - Mobile responsive design
   - Popuplar kapandıktan sonra, popup açılmadan önce hangi tab aktif ise o tab tekrar aktif olmalıdır.
   - Update, delete, Add işlemlerinden sonra success message
-  - Data settings popup da değşiklik yapıp kaydetmediği zaman yanlış veri gösteriyor
   */

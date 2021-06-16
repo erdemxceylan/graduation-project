@@ -158,3 +158,11 @@
 :host ::ng-deep .add-update-nutrient-input .p-inputnumber-input {
   width: 260px;
 }
+
+.green {
+  color: green;
+}
+
+.red {
+  color: red;
+}
